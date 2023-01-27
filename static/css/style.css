@@ -524,3 +524,28 @@ body.one-content-column-version .content thead {
 .cf:before, .cf:after { content: ""; display: block; }
 .cf:after { clear: both; }
 .ie6 .cf { zoom: 1 }
+
+.upload-file {
+    position: relative;
+    padding: 12px 13.25%;
+    margin-bottom: 20px;
+    font-size: 14px;
+    background-color: #1d3557;
+}
+
+.upload-file span {
+    color: #ffffff;
+    font-size: 1.3em;
+}
+
+.upload-file form {
+    margin-top: 10px;
+}
+
+.upload-file form p input[type='submit'] {
+    border-radius: 4px;
+    padding: 10px 20px;
+    font-size: 14px;
+    appearance: none;
+    border: none;
+}
