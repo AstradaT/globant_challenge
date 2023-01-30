@@ -1,16 +1,19 @@
 from flask import Flask, jsonify, request, render_template
 import pandas as pd
 from flask_sqlalchemy import SQLAlchemy
+import os
 
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.config['UPLOAD_FOLDER'] = 'data'
+app.config['SQLALCHEMY_ECHO'] = True
 db = SQLAlchemy(app)
 
 
-departments = pd.read_csv('data/departments.csv', names=['id','department'], header=None).to_json()
-hired_employees = pd.read_csv('data/hired_employees.csv', names=['id','name','datetime','department_id','job_id'], header=None).to_json()
-jobs = pd.read_csv('data/jobs.csv', names=['id','job'], header=None).to_json()
+# departments = pd.read_csv('data/raw/departments.csv', names=['id','department'], header=None).to_json()
+# hired_employees = pd.read_csv('data/raw/hired_employees.csv', names=['id','name','datetime','department_id','job_id'], header=None).to_json()
+# jobs = pd.read_csv('data/raw/jobs.csv', names=['id','job'], header=None).to_json()
 
 
 class Department(db.Model):
@@ -47,9 +50,19 @@ with app.app_context():
     db.create_all()
 
 
-@app.route('/', methods=['GET'])
+@app.route('/', methods=['GET', 'POST'])
 def home():
-    return render_template('asd.html')
+    if request.method == 'POST':
+        file = request.files['file']
+        if file.filename != '':
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+            file.save(filepath)
+            df = pd.read_csv(filepath, header=None)
+            with db.engine.begin() as connection:
+                df.to_sql(file.filename.removesuffix('.csv'), con=connection, if_exists='replace', index=False, chunksize=1000)
+            print(df)
+            
+    return render_template('index.html')
 
 
 @app.route('/departments', methods=['GET'])
