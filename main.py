@@ -1,6 +1,6 @@
-from flask import Flask, jsonify, request, render_template
-import pandas as pd
+from flask import Flask, jsonify, request, render_template, flash
 from flask_sqlalchemy import SQLAlchemy
+import pandas as pd
 import os
 
 
@@ -27,10 +27,10 @@ class Department(db.Model):
 class Employee(db.Model):
     __tablename__ = 'employees'
     id = db.Column(db.Integer, nullable=False, primary_key=True)
-    name = db.Column(db.String, nullable=False)
-    datetime = db.Column(db.String, nullable=False)
-    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'), nullable=False)
-    job_id = db.Column(db.Integer, db.ForeignKey('jobs.id'), nullable=False)
+    name = db.Column(db.String)
+    datetime = db.Column(db.String)
+    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
+    job_id = db.Column(db.Integer, db.ForeignKey('jobs.id'))
     department = db.relationship('Department')
     job = db.relationship('Job')
 
@@ -53,14 +53,22 @@ with app.app_context():
 @app.route('/', methods=['GET', 'POST'])
 def home():
     if request.method == 'POST':
+        # Get file from html form
         file = request.files['file']
         if file.filename != '':
+            # Save file to storage
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(filepath)
+            # Convert csv to dataframe
             df = pd.read_csv(filepath, header=None)
+            # Move data to SQLite database
             with db.engine.begin() as connection:
-                df.to_sql(file.filename.removesuffix('.csv'), con=connection, if_exists='replace', index=False, chunksize=1000)
-            print(df)
+                table = file.filename
+                df.to_sql(table, con=connection, if_exists='replace', index=False, chunksize=1000)
+                table_2 = table.removeprefix('hired_').removesuffix('.csv')
+                connection.execute(f"INSERT INTO {table_2} SELECT * FROM `{table}`;")
+        success_message = "The CSV file has been uploaded to the database successfully."
+        flash(success_message)
             
     return render_template('index.html')
 
