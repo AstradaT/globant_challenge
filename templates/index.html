@@ -26,15 +26,6 @@
 </head>
 
 <body class="one-content-column-version">
-    {% with message = get_flashed_messages() %}
-        {% if messages %}
-            <ul>
-                {% for message in messages %}
-                    <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
     <div class="left-menu">
         <div class="content-logo">
             <div class="logo">
@@ -47,10 +38,6 @@
         </div>
         <div class="mobile-menu-closer"></div>
         <div class="content-menu">
-            <div class="content-infos">
-                <div class="info"><b>Version:</b> 1.0.0</div>
-                <div class="info"><b>Last Updated:</b> 26th Jan, 2023</div>
-            </div>
             <ul>
                 <li class="scroll-to-link active" data-target="content-get-started">
                     <a>GET STARTED</a>
@@ -68,6 +55,13 @@
                     <p><input type="file" name="file"></p>
                     <p><input type="submit" value="Submit"></p>
                 </form>
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        {% for message in messages %}
+                            <p style="font-size: 18px;">{{ message }}</p>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
             </div>
         </div>
     </div>
@@ -79,7 +73,7 @@
                 <pre>
         API Endpoint
 
-            https://api.westeros.com/
+            http://localhost:5000/
                     </pre>
                 <p>
                     The Westeros API provides programmatic access to read Game of Thrones data. Retrieve a character, provide an oauth connexion, retrieve a familly, filter them, etc.
