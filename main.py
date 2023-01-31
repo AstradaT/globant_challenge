@@ -185,6 +185,46 @@ def restore_jobs():
     return redirect(('/'))
 
 
+@app.route('/query1', methods=['GET'])
+def query1():
+    # Number of employees hired for each job and department in 2021 divided by quarter.
+    # The table must be ordered alphabetically by department and job.
+    # | department | job | Q1 | Q2 | Q3 | Q4 |
+    conn = sqlite3.connect('instance/database.db')
+    cur = conn.cursor()
+    with open('query1.sql', 'r') as file:
+        res = cur.execute(file.read()).fetchall()
+    records = []
+    for row in res:
+        records.append({
+            'department': row[0], 
+            'job': row[1], 
+            'q1': row[2],
+            'q2': row[3],
+            'q3': row[4],
+            'q4': row[5]})
+    return records
+
+
+@app.route('/query2', methods=['GET'])
+def query2():
+    # List of IDs, names and number of employees hired of each department that hired more
+    # employees than the mean of employees hired in 2021 for all the departments, ordered
+    # by the number of employees hired (descending)
+    # | id | department | hired |
+    conn = sqlite3.connect('instance/database.db')
+    cur = conn.cursor()
+    with open('query2.sql', 'r') as file:
+        res = cur.execute(file.read()).fetchall()
+    records = []
+    for row in res:
+        records.append({
+            'id': row[0], 
+            'department': row[1], 
+            'hired': row[2]})
+    return records
+
+
 if __name__ == '__main__':
     db.init_app(app)
     with app.app_context():
