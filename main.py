@@ -1,10 +1,12 @@
-from flask import Flask, jsonify, request, render_template, flash, send_file
-from flask_sqlalchemy import SQLAlchemy
-import pandas as pd
+import json
 import os
+import pandas as pd
+import sqlite3
+from fastavro import writer
+from flask import Flask, jsonify, request, render_template, flash, send_file, redirect
+from flask_sqlalchemy import SQLAlchemy
+from helpers import get_data, schema_d, schema_e, schema_j, read_avro
 from sqlalchemy.exc import IntegrityError
-from helpers import get_data
-from fastavro import writer, schema
 
 
 app = Flask(__name__)
@@ -70,55 +72,117 @@ def home():
     return render_template('index.html')
 
 
-@app.route('/api/departments', methods=['GET'])
-def get_departments():
-    data = get_data('departments')
-    lis = []
+@app.route('/api/departments', defaults={'limit': -1, 'offset': 0})
+@app.route('/api/departments/<offset>/<limit>', methods=['GET'])
+def get_departments(offset, limit):
+    data = get_data('departments', offset, limit)
+    records = []
     for row in data:
-        lis.append({'id': row[0], 'department': row[1]})
-    return f"{lis}"
+        records.append({'id': row[0], 'department': row[1]})
+    return records
 
 
-@app.route('/api/employees', methods=['GET'])
-def get_hired_employees():
-    data = get_data('employees')
-    lis = []
+@app.route('/api/employees', defaults={'limit': -1, 'offset': 0})
+@app.route('/api/employees/<offset>/<limit>', methods=['GET'])
+def get_hired_employees(offset, limit):
+    data = get_data('employees', offset, limit)
+    records = []
     for row in data:
-        lis.append({
+        records.append({
             'id': row[0], 
             'name': row[1], 
             'datetime': row[2], 
             'department_id': row[3], 
             'job_id': row[4]})
-    return f"{lis}"
+    return records
 
 
-@app.route('/api/jobs', methods=['GET'])
-def get_jobs():
-    data = get_data('jobs')
-    lis = []
+@app.route('/api/jobs', defaults={'limit': -1, 'offset': 0})
+@app.route('/api/jobs/<offset>/<limit>', methods=['GET'])
+def get_jobs(offset, limit):
+    data = get_data('jobs', offset, limit)
+    records = []
     for row in data:
-        lis.append({'id': row[0], 'job': row[1]})
-    return f"{lis}"
+        records.append({'id': row[0], 'job': row[1]})
+    return records
 
 
 @app.route('/api/departments/backup', methods=['GET'])
 def backup_departments():
-    data = get_data('departments')
-    json = jsonify(data)
-    with open('departments.avro', 'wb') as file:
-        writer(file, schema, json)
-    return send_file('data/avro/departments.avro', as_attachment=True)
+    with open('data/departments.avro', 'wb') as file:
+        writer(file, schema_d, get_departments())
+    return send_file('data/departments.avro')
 
 
 @app.route('/api/employees/backup', methods=['GET'])
 def backup_hired_employees():
-    pass
+    with open('data/employees.avro', 'wb') as file:
+        writer(file, schema_e, get_hired_employees())
+    return send_file('data/employees.avro')
 
 
 @app.route('/api/jobs/backup', methods=['GET'])
 def backup_jobs():
-    pass
+    with open('data/jobs.avro', 'wb') as file:
+        writer(file, schema_j, get_jobs())
+    return send_file('data/jobs.avro')
+
+
+@app.route('/api/departments/restore')
+def restore_departments():
+    conn = sqlite3.connect('instance/database.db')
+    cur = conn.cursor()
+    cur.execute(f"DELETE FROM departments;")
+    data = json.loads(read_avro('departments'))
+    columns = ['id', 'department']
+    for row in data:
+        keys = tuple(row[c] for c in columns)
+        try:
+            cur.execute("INSERT INTO departments VALUES (?,?);", keys)
+        except IntegrityError:
+            message = "Table not empty."
+        print(f"Row id: {row['id']} inserted succesfully!")
+    message = "Table departments restored successfully."
+    flash(message)
+    return redirect(('/'))
+
+
+@app.route('/api/employees/restore', methods=['GET'])
+def restore_employees():
+    conn = sqlite3.connect('instance/database.db')
+    cur = conn.cursor()
+    cur.execute(f"DELETE FROM employees;")
+    data = json.loads(read_avro('employees'))
+    columns = ['id', 'department', 'datetime', 'department_id', 'job_id']
+    for row in data:
+        keys = tuple(row[c] for c in columns)
+        try:
+            cur.execute("INSERT INTO employees VALUES (?,?,?,?,?);", keys)
+        except IntegrityError:
+            message = "Table not empty."
+        print(f"Row id: {row['id']} inserted succesfully!")
+    message = "Table employees restored successfully."
+    flash(message)
+    return redirect(('/'))
+
+
+@app.route('/api/jobs/restore', methods=['GET'])
+def restore_jobs():
+    conn = sqlite3.connect('instance/database.db')
+    cur = conn.cursor()
+    cur.execute(f"DELETE FROM jobs;")
+    data = json.loads(read_avro('jobs'))
+    columns = ['id', 'job']
+    for row in data:
+        keys = tuple(row[c] for c in columns)
+        try:
+            cur.execute("INSERT INTO jobs VALUES (?,?);", keys)
+        except IntegrityError:
+            message = "Table not empty."
+        print(f"Row id: {row['id']} inserted succesfully!")
+    message = "Table jobs restored successfully."
+    flash(message)
+    return redirect(('/'))
 
 
 if __name__ == '__main__':
