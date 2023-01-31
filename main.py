@@ -1,9 +1,10 @@
-from flask import Flask, jsonify, request, render_template, flash
+from flask import Flask, jsonify, request, render_template, flash, send_file
 from flask_sqlalchemy import SQLAlchemy
 import pandas as pd
 import os
-import sqlite3
 from sqlalchemy.exc import IntegrityError
+from helpers import get_data
+from fastavro import writer, schema
 
 
 app = Flask(__name__)
@@ -71,22 +72,18 @@ def home():
 
 @app.route('/api/departments', methods=['GET'])
 def get_departments():
-    conn = sqlite3.connect('instance/database.db')
-    cur = conn.cursor()
-    result = cur.execute("SELECT * FROM departments;").fetchall()
+    data = get_data('departments')
     lis = []
-    for row in result:
+    for row in data:
         lis.append({'id': row[0], 'department': row[1]})
     return f"{lis}"
 
 
 @app.route('/api/employees', methods=['GET'])
 def get_hired_employees():
-    conn = sqlite3.connect('instance/database.db')
-    cur = conn.cursor()
-    result = cur.execute("SELECT * FROM employees;").fetchall()
+    data = get_data('employees')
     lis = []
-    for row in result:
+    for row in data:
         lis.append({
             'id': row[0], 
             'name': row[1], 
@@ -98,18 +95,20 @@ def get_hired_employees():
 
 @app.route('/api/jobs', methods=['GET'])
 def get_jobs():
-    conn = sqlite3.connect('instance/database.db')
-    cur = conn.cursor()
-    result = cur.execute("SELECT * FROM jobs;").fetchall()
+    data = get_data('jobs')
     lis = []
-    for row in result:
+    for row in data:
         lis.append({'id': row[0], 'job': row[1]})
     return f"{lis}"
 
 
 @app.route('/api/departments/backup', methods=['GET'])
 def backup_departments():
-    pass
+    data = get_data('departments')
+    json = jsonify(data)
+    with open('departments.avro', 'wb') as file:
+        writer(file, schema, json)
+    return send_file('data/avro/departments.avro', as_attachment=True)
 
 
 @app.route('/api/employees/backup', methods=['GET'])
