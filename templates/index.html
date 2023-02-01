@@ -25,7 +25,7 @@
     <script>hljs.initHighlightingOnLoad();</script>
 </head>
 
-<body class="one-content-column-version">
+<body>
     <div class="left-menu">
         <div class="content-logo">
             <div class="logo">
@@ -51,8 +51,8 @@
                 <li class="scroll-to-link" data-target="content-restore">
                     <a>Restore</a>
                 </li>
-                <li class="scroll-to-link" data-target="content-errors">
-                    <a>Errors</a>
+                <li class="scroll-to-link" data-target="content-cahllenge">
+                    <a>Challenge #2</a>
                 </li>
             </ul>
             <div class="upload-file">
@@ -69,6 +69,7 @@
                     {% endif %}
                 {% endwith %}
             </div>
+            <p style="color: black; padding-left: 13.25%;">By <a href="https://github.com/AstradaT" style="color:black">Tomás Astrada</a></p>
         </div>
     </div>
     <div class="content-page">
@@ -82,23 +83,27 @@
             http://localhost:5000/
                     </pre>
                 <p>
-                    This API The Westeros API provides programmatic access to read Game of Thrones data. Retrieve a character, provide an oauth connexion, retrieve a familly, filter them, etc.
+                    To start using this API, you first need to populate the tables uploading the 3 .csv files using the menu on the left.
                 </p>
                 <p>
-                    To use this API, you need an <strong>API key</strong>. Please contact us at <a href="mailto:jon.snow@nightswatch.wes">jon.snow@nightswatch.wes</a> to get your own API key.
+                    Files: [departments.csv, hired_employees.csv, jobs.csv]
+                </p>
+                <p>
+                    Once that is done, you can start querying the data accessing the endpoints.
+                </p>
+                <p>
+                    Endpoints:<br>
+                    <code class="higlighted break-word">http://localhost:5000/api/departments</code><br>
+                    <code class="higlighted break-word">http://localhost:5000/api/employees</code><br>
+                    <code class="higlighted break-word">http://localhost:5000/api/jobs</code><br>
                 </p>
             </div>
             <div class="overflow-hidden content-section" id="content-get-characters">
                 <h2>get employees</h2>
-                <p>
-                    To get employees you need to go to the following url :<br>
-                    <code class="higlighted break-word">http://localhost:5000/api/employees/{offset}/{limit}</code>
-                </p>
-                <br>
                 <pre><code class="json">
     Result example :
 
-    query: http://localhost:5000/api/employees/50/5
+    query: http://localhost:5000/api/employees/50/3
 
     result: [
         {
@@ -122,23 +127,13 @@
             "job_id": 115,
             "name": "Rebbecca Bazely"
         },
-        {
-            "datetime": "2021-11-13T08:29:11Z",
-            "department_id": 7,
-            "id": 54,
-            "job_id": 53,
-            "name": "Bevin Battlestone"
-        },
-        {
-            "datetime": "2022-02-02T00:11:54Z",
-            "department_id": 10,
-            "id": 55,
-            "job_id": 34,
-            "name": "Marielle Nasi"
-        }
         ]
 
                     </code></pre>
+                <p>
+                    To get employees you need to go to the following url :<br>
+                    <code class="higlighted break-word">http://localhost:5000/api/employees/{offset}/{limit}</code>
+                </p>
                 <h4>QUERY PARAMETERS</h4>
                 <table class="central-overflow-x">
                     <thead>
@@ -162,67 +157,61 @@
                     </tbody>
                 </table>
             </div>
-            <div class="overflow-hidden content-section" id="content-get-characters">
+            <div class="overflow-hidden content-section" id="content-backup">
                 <h2>Backup</h2>
                 <p>
-                    To backup a table use the following URL :<br>
+                    To backup a table to an AVRO file use the following URL :<br>
                     <code class="higlighted break-word">http://localhost:5000/api/{table}/backup</code>
                 </p>
                 <br>
             </div>
             <div class="overflow-hidden content-section" id="content-restore">
-                <h1>Restore</h1>
-                <pre>
-        API Endpoint
-
-            http://localhost:5000/api/{table}/restore
-                    </pre>
+                <h2>Restore</h2>
                 <p>
-                    The Westeros API provides programmatic access to read Game of Thrones data. Retrieve a character, provide an oauth connexion, retrieve a familly, filter them, etc.
+                    To restore a table from an AVRO file use the following URL :<br>
+                    <code class="higlighted break-word">http://localhost:5000/api/{table}/restore</code>
                 </p>
-                <p>
-                    To use this API, you need an <strong>API key</strong>. Please contact us at <a href="mailto:jon.snow@nightswatch.wes">jon.snow@nightswatch.wes</a> to get your own API key.
-                </p>
+                <br>
             </div>
-            <div class="overflow-hidden content-section" id="content-errors">
-                <h2>Errors</h2>
+            <div class="overflow-hidden content-section" id="content-challenge">
+                <h2>Challenge #2</h2>
+                <pre>
+                    <code class="json">
+    Result example :
+    
+    [
+        {
+        "department": "Accounting",
+        "job": "Account Representative IV",
+        "q1": 1,
+        "q2": 0,
+        "q3": 0,
+        "q4": 0
+        },
+        {
+        "department": "Accounting",
+        "job": "Actuary",
+        "q1": 0,
+        "q2": 1,
+        "q3": 0,
+        "q4": 0
+        }
+    ...
+                    </code>
+                </pre>
                 <p>
-                    The Westeros API uses the following error codes:
+                    Number of employees hired for each job and department in 2021 divided 
+                    by quarter. The table must be ordered alphabetically by department 
+                    and job.<br>
+                    <code class="higlighted break-word">http://localhost:5000/query1</code>
                 </p>
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Error Code</th>
-                        <th>Meaning</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td>X000</td>
-                        <td>
-                            Some parameters are missing. This error appears when you don't pass every mandatory parameters.
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>X001</td>
-                        <td>
-                            Unknown or unvalid <code class="higlighted">secret_key</code>. This error appears if you use an unknow API key or if your API key expired.
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>X002</td>
-                        <td>
-                            Unvalid <code class="higlighted">secret_key</code> for this domain. This error appears if you use an  API key non specified for your domain. Developper or Universal API keys doesn't have domain checker.
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>X003</td>
-                        <td>
-                            Unknown or unvalid user <code class="higlighted">token</code>. This error appears if you use an unknow user <code class="higlighted">token</code> or if the user <code class="higlighted">token</code> expired.
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+                <p>
+                    List of IDs, names and number of employees hired of each department 
+                    that hired more employees than the mean of employees hired in 2021 
+                    for all the departments, ordered by the number of employees hired 
+                    (descending)<br>
+                    <code class="higlighted break-word">http://localhost:5000/query2</code>
+                </p>
             </div>
         </div>
         <div class="content-code"></div>
