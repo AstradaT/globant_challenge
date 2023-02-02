@@ -81,9 +81,9 @@ You need to install Docker to run this project.
    ```
 3. Run the container
   ```sh
-  sudo docker run globant-challenge
+  sudo docker run -p 5000:5000 globant-challenge
   ```
-4. Go to http://localhost:5050
+4. Go to http://localhost:5000
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
