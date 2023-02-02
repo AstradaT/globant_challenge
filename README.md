@@ -75,11 +75,15 @@ You need to install Docker to run this project.
    ```sh
    git clone https://github.com/AstradaT/globant_challenge.git
    ```
-2. Run the Docker container
+2. Build the Docker image
    ```sh
-   docker compose up
+   sudo docker build -t globant-challenge .
    ```
-3. Go to http://localhost:5050
+3. Run the container
+  ```sh
+  sudo docker run globant-challenge
+  ```
+4. Go to http://localhost:5050
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
